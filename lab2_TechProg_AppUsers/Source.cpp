@@ -6,25 +6,34 @@
 #include <vector>
 #include <fstream>
 #include <atlstr.h>
+#include <map>
+#include<TCHAR.H>
 
 #define OK_BUTTON 1
 #define MAX 100
 #define CONFIRM_BUTTON 2
-
+#define MAX_BUTTON 5
+ 
 using namespace std;
-HWND hUsers, hLogin;
+HWND hUsers, hLogin, hApp;
 
 LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM);
 LRESULT CALLBACK WindowProcedure_app(HWND, UINT, WPARAM, LPARAM);
 
 void AddControl(HWND);
 void AddControl_app(HWND);
-wchar_t user_name[MAX];
+ wchar_t user_name[MAX];
 
 vector<string> name;
-int flag = 0;
+map <string, int> map_name;
+
+int cnt;
+
+ofstream SaveData;
+ifstream InputData;
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR args, int ncmdshow)
 {
+	cnt = MAX_BUTTON;
 	WNDCLASSW wc = { 0 };
 	wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
 	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
@@ -41,7 +50,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR args, int ncmdsho
 
 	string line;
 	ifstream myfile;
-
+ 
 	const WCHAR SavingUsers[] = L"C:\\Users\\dungphan16499\\source\\repos\\lab2_TechProg_AppUsers\\UsersName.txt";
 
 	myfile.open("C:\\Users\\dungphan16499\\source\\repos\\lab2_TechProg_AppUsers\\UsersName.txt");
@@ -57,6 +66,28 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR args, int ncmdsho
 	}
 	else
 		cout << "Unable to open file";
+
+	InputData.open("C:\\Users\\dungphan16499\\source\\repos\\lab2_TechProg_AppUsers\\outdata.txt");
+	string line2;
+	//for (int i = 0; i < name.size(); i++)
+		if (InputData.is_open())
+		{
+			for (int i = 0; i < name.size(); i++)
+			{
+				getline(InputData, line2);
+				if (line2 == "" || line2 == "0")
+					map_name.insert(pair<string, int>(name[i], MAX_BUTTON));
+				else
+				{
+					int tmp;
+					sscanf(line2.c_str(), "%d", &tmp);
+					map_name.insert(pair<string, int>(name[i], tmp));			
+				}
+			}
+			InputData.close();
+		}
+	
+	//SaveData.open("C:\\Users\\dungphan16499\\source\\repos\\lab2_TechProg_AppUsers\\outdata.txt");
 
 	//MessageBox(NULL, L"Hello", L"msg", MB_OK);
 	if (!RegisterClassW(&wc))
@@ -100,8 +131,22 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)
 	case WM_COMMAND:
 		switch (wp)
 		{
-		case CONFIRM_BUTTON:
-			
+		case OK_BUTTON:
+			GetWindowTextW(hUsers, user_name, MAX);
+
+			wstring ws(user_name);
+			string str(ws.begin(), ws.end()); //convert wchar_t to string 
+
+			cnt = map_name[str];
+			if (find(name.begin(), name.end(), str) != name.end())
+			{
+				MessageBoxW(NULL, user_name, L"msg", MB_OK);
+				hApp = CreateWindowW(L"myWindowClass_app",
+					L"My Window App",
+					WS_OVERLAPPEDWINDOW | WS_VISIBLE,
+					150, 150, 300, 300, NULL, NULL, NULL, NULL);
+				ShowWindow(hLogin, SW_HIDE); //Hide Login window in "using" mode
+			}
 
 		}
 	default:
@@ -123,21 +168,14 @@ LRESULT CALLBACK WindowProcedure_app(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)
 	case WM_COMMAND:
 		switch (wp)
 		{
-		case OK_BUTTON:
-			GetWindowText(hUsers, user_name, MAX);
-
-			wstring ws(user_name);
-			string str(ws.begin(), ws.end()); //convert wchar_t to string 
-			if (find(name.begin(), name.end(), str) != name.end())
-			{
-				MessageBox(NULL, user_name, L"msg", MB_OK);
-				CreateWindowW(L"myWindowClass_app",
-					L"My Window App",
-					WS_OVERLAPPEDWINDOW | WS_VISIBLE,
-					150, 150, 300, 300, NULL, NULL, NULL, NULL);
-				ShowWindow(hLogin, SW_HIDE); //Hide Login window in "using" mode
-			}
-
+			case CONFIRM_BUTTON:
+				//cnt = MAX_BUTTON;
+				cnt--;
+				SaveData.open("C:\\Users\\dungphan16499\\source\\repos\\lab2_TechProg_AppUsers\\outdata.txt");
+				SaveData << cnt << endl;
+				SaveData.close();
+				if(cnt == 0)
+					DestroyWindow(hApp);
 		}
 	default:
 		return DefWindowProcW(hWnd, msg, wp, lp);
@@ -183,9 +221,9 @@ void AddControl_app(HWND hWnd)
 	//	NULL, NULL, NULL);
 	CreateWindowW(L"button",
 		L"Confirm",
-		BS_PUSHBUTTON | WS_VISIBLE | WS_CHILD,
-		200, 204, 100, 50,
+		WS_VISIBLE | WS_CHILD,
+		180, 185, 100, 50,
 		hWnd,
-		(HMENU)OK_BUTTON, NULL, NULL);
+		(HMENU)CONFIRM_BUTTON, NULL, NULL);
 
 }
