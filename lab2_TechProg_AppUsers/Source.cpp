@@ -7,7 +7,8 @@
 #include <fstream>
 #include <atlstr.h>
 #include <map>
-#include<TCHAR.H>
+#include <sqlite3.h> 
+#include <sstream>
 
 #define OK_BUTTON 1
 #define MAX 100
@@ -15,6 +16,14 @@
 #define MAX_BUTTON 5
  
 using namespace std;
+
+ofstream SaveData;
+ifstream InputData;
+
+std::ostringstream temp;
+std::string command;
+string tmp;
+
 HWND hUsers, hLogin, hApp;
 
 LRESULT CALLBACK WindowProcedure(HWND, UINT, WPARAM, LPARAM);
@@ -22,18 +31,35 @@ LRESULT CALLBACK WindowProcedure_app(HWND, UINT, WPARAM, LPARAM);
 
 void AddControl(HWND);
 void AddControl_app(HWND);
- wchar_t user_name[MAX];
+wchar_t user_name[MAX];
 
 vector<string> name;
 map <string, int> map_name;
 
 int cnt;
 
-ofstream SaveData;
-ifstream InputData;
+sqlite3* db;
+sqlite3_stmt* stmt;
+char* zErrMsg = 0;
+int rc;
+const char* sql;
+const char* data = "Callback function called";
+
+static int callback(void* NotUsed, int argc, char** argv, char** azColName) {
+	int i;
+	for (i = 0; i < argc; i++) {
+		tmp = (argv[i]);
+		printf("%s = %s\n", azColName[i], argv[i] ? argv[i] : "NULL");
+		
+	}
+	printf("\n");
+	return 0;
+}
+
+
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR args, int ncmdshow)
 {
-	cnt = MAX_BUTTON;
+	//cnt = MAX_BUTTON;
 	WNDCLASSW wc = { 0 };
 	wc.hbrBackground = (HBRUSH)COLOR_WINDOW;
 	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
@@ -67,25 +93,102 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR args, int ncmdsho
 	else
 		cout << "Unable to open file";
 
-	InputData.open("C:\\Users\\dungphan16499\\source\\repos\\lab2_TechProg_AppUsers\\outdata.txt");
-	string line2;
-	//for (int i = 0; i < name.size(); i++)
-		if (InputData.is_open())
-		{
-			for (int i = 0; i < name.size(); i++)
-			{
-				getline(InputData, line2);
-				if (line2 == "" || line2 == "0")
-					map_name.insert(pair<string, int>(name[i], MAX_BUTTON));
-				else
-				{
-					int tmp;
-					sscanf(line2.c_str(), "%d", &tmp);
-					map_name.insert(pair<string, int>(name[i], tmp));			
-				}
-			}
-			InputData.close();
-		}
+	/* Open database */
+	rc = sqlite3_open("test.db", &db);
+
+	if (rc) {
+		fprintf(stderr, "Can't open database: %s\n", sqlite3_errmsg(db));
+		return(0);
+	}
+	else {
+		fprintf(stderr, "Opened database successfully\n");
+	}
+
+	/* Create SQL statement */
+   /* Create SQL statement */
+	//sql = "CREATE TABLE USERS("  \
+	//	"NAME STRING PRIMARY KEY    NOT NULL," \
+	//	"NUMBER            INT     NOT NULL);";
+	
+	//temp.str("");
+	//temp << "CREATE TABLE USERS(NAME TEXT    PRIMARY KEY    NOT NULL, NUMBER   INT     NOT NULL);";
+	//command = temp.str();
+	//rc = sqlite3_exec(db, command.c_str(), callback, 0, &zErrMsg);
+
+	/* Execute SQL statement */
+	//rc = sqlite3_exec(db, sql, callback, 0, &zErrMsg);
+
+	sql = "CREATE TABLE USERS("  \
+		"NAME TEXT PRIMARY KEY     NOT NULL," \
+		"NUMBER            INT    NOT NULL);";
+
+	rc = sqlite3_exec(db, sql, callback, 0, &zErrMsg);
+
+	if (rc != SQLITE_OK) {
+		fprintf(stderr, "SQL error: %s\n", zErrMsg);
+		sqlite3_free(zErrMsg);
+	}
+	else {
+		fprintf(stdout, "Table created successfully\n");
+	}
+
+	/* Create SQL statement */
+	
+	//temp << "INSERT or IGNORE INTO COMPANY (ID,NAME,AGE,ADDRESS,SALARY) VALUES (" << _id << ", '" << _name << "', " << _age << ", '" << _address << "', " << _salary << ")";
+	for (int k = 0; k < name.size(); k++)
+	{
+		temp.str("");
+		temp << "INSERT or IGNORE INTO USERS (NAME,NUMBER) VALUES ('" << name[k] << "', " << MAX_BUTTON << ")";
+		command = temp.str();
+		rc = sqlite3_exec(db, command.c_str(), callback, 0, &zErrMsg);
+	}
+	
+	//int _number = 3;
+	//temp.str("");
+	//temp << "UPDATE USERS set NUMBER  = " << _number << "  where NAME = '" << name[0] << "'";
+	//command = temp.str();
+	//rc = sqlite3_exec(db, command.c_str(), callback, 0, &zErrMsg);
+
+	//temp.str("");
+	//temp << "SELECT * from USERS where NAME =  '" << name[0] << "'";
+
+	//command = temp.str();
+	//sqlite3_prepare_v2(db, command.c_str(), -1, &stmt, 0);
+
+	//sqlite3_step(stmt);
+	//cnt = sqlite3_column_int(stmt, 1);
+
+	/* Execute SQL statement */
+	//rc = sqlite3_exec(db, command.c_str(), callback, 0, &zErrMsg);
+
+	if (rc != SQLITE_OK) {
+		fprintf(stderr, "SQL error: %s\n", zErrMsg);
+		sqlite3_free(zErrMsg);
+	}
+	else {
+		fprintf(stdout, "Records created successfully\n");
+	}
+	sqlite3_close(db);
+	
+	//InputData.open("C:\\Users\\dungphan16499\\source\\repos\\lab2_TechProg_AppUsers\\outdata.txt");
+	//string line2;
+	////for (int i = 0; i < name.size(); i++)
+	//	if (InputData.is_open())
+	//	{
+	//		for (int i = 0; i < name.size(); i++)
+	//		{
+	//			getline(InputData, line2);
+	//			if (line2 == "" || line2 == "0")
+	//				map_name.insert(pair<string, int>(name[i], MAX_BUTTON));
+	//			else
+	//			{
+	//				int tmp;
+	//				sscanf(line2.c_str(), "%d", &tmp);
+	//				map_name.insert(pair<string, int>(name[i], tmp));			
+	//			}
+	//		}
+	//		InputData.close();
+	//	}
 	
 	//SaveData.open("C:\\Users\\dungphan16499\\source\\repos\\lab2_TechProg_AppUsers\\outdata.txt");
 
@@ -124,6 +227,7 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)
 	{
 	case WM_CLOSE:
 		exit(0);
+		sqlite3_close(db);
 		//PostQuitMessage(0);
 		break;
 	case WM_CREATE:
@@ -133,19 +237,38 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)
 		{
 		case OK_BUTTON:
 			GetWindowTextW(hUsers, user_name, MAX);
-
+			rc = sqlite3_open("test.db", &db);
 			wstring ws(user_name);
-			string str(ws.begin(), ws.end()); //convert wchar_t to string 
+			string str1(ws.begin(), ws.end()); //convert wchar_t to string 
+			//cnt = MAX_BUTTON;
+			
 
-			cnt = map_name[str];
-			if (find(name.begin(), name.end(), str) != name.end())
+			//rc = sqlite3_exec(db, command.c_str(), callback, 0, &zErrMsg);
+			//cnt = stoi(tmp);
+
+			//SaveData.open("C:\\Users\\dungphan16499\\source\\repos\\lab2_TechProg_AppUsers\\outdata.txt");
+			//SaveData << cnt << endl;
+			//SaveData.close();
+
+			if (find(name.begin(), name.end(), str1) != name.end())
 			{
+				temp.str("");
+				temp << "SELECT * from USERS where NAME =  '" << str1 << "'";
+
+				command = temp.str();
+				sqlite3_prepare_v2(db, command.c_str(), -1, &stmt, 0);
+
+				sqlite3_step(stmt);
+				cnt = sqlite3_column_int(stmt, 1); //take number with name from database
+				if (cnt == 0)
+					cnt = 5;
 				MessageBoxW(NULL, user_name, L"msg", MB_OK);
 				hApp = CreateWindowW(L"myWindowClass_app",
 					L"My Window App",
 					WS_OVERLAPPEDWINDOW | WS_VISIBLE,
 					150, 150, 300, 300, NULL, NULL, NULL, NULL);
 				ShowWindow(hLogin, SW_HIDE); //Hide Login window in "using" mode
+				sqlite3_close(db);
 			}
 
 		}
@@ -171,11 +294,27 @@ LRESULT CALLBACK WindowProcedure_app(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)
 			case CONFIRM_BUTTON:
 				//cnt = MAX_BUTTON;
 				cnt--;
-				SaveData.open("C:\\Users\\dungphan16499\\source\\repos\\lab2_TechProg_AppUsers\\outdata.txt");
-				SaveData << cnt << endl;
-				SaveData.close();
-				if(cnt == 0)
+				wstring ws(user_name);
+				string str1(ws.begin(), ws.end());
+				//rc = sqlite3_open("test.db", &db);
+
+				temp.str("");
+				temp << "UPDATE USERS set NUMBER  = " << cnt << "  where NAME = '" << str1 << "'";
+				command = temp.str();
+				rc = sqlite3_exec(db, command.c_str(), callback, 0, &zErrMsg);
+
+				//temp.str("");
+				//temp << "UPDATE USERS set NUMBER  = " << cnt << "  where NAME = '" << str1 << "'";
+				//command = temp.str();
+				//rc = sqlite3_exec(db, command.c_str(), callback, 0, &zErrMsg);
+				//sqlite3_close(db);
+
+				if (cnt == 0)
 					DestroyWindow(hApp);
+				//if (DestroyWindow(hApp) == 1)
+				//{
+
+				//}
 		}
 	default:
 		return DefWindowProcW(hWnd, msg, wp, lp);
