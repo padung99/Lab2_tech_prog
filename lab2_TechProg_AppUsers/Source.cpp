@@ -103,24 +103,13 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR args, int ncmdsho
 		fprintf(stderr, "Opened database successfully\n");
 	}
 
+
 	/* Create SQL statement */
-   /* Create SQL statement */
-	//sql = "CREATE TABLE USERS("  \
-	//	"NAME STRING PRIMARY KEY    NOT NULL," \
-	//	"NUMBER            INT     NOT NULL);";
-	
-	//temp.str("");
-	//temp << "CREATE TABLE USERS(NAME TEXT    PRIMARY KEY    NOT NULL, NUMBER   INT     NOT NULL);";
-	//command = temp.str();
-	//rc = sqlite3_exec(db, command.c_str(), callback, 0, &zErrMsg);
-
-	/* Execute SQL statement */
-	//rc = sqlite3_exec(db, sql, callback, 0, &zErrMsg);
-
 	sql = "CREATE TABLE USERS("  \
 		"NAME TEXT PRIMARY KEY     NOT NULL," \
 		"NUMBER            INT    NOT NULL);";
 
+	/* Execute SQL statement */
 	rc = sqlite3_exec(db, sql, callback, 0, &zErrMsg);
 
 	if (rc != SQLITE_OK) {
@@ -142,50 +131,6 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR args, int ncmdsho
 		rc = sqlite3_exec(db, command.c_str(), callback, 0, &zErrMsg);
 	}
 	
-	//int _number = 3;
-	//temp.str("");
-	//temp << "UPDATE USERS set NUMBER  = " << _number << "  where NAME = '" << name[0] << "'";
-	//command = temp.str();
-	//rc = sqlite3_exec(db, command.c_str(), callback, 0, &zErrMsg);
-
-	//temp.str("");
-	//temp << "SELECT * from USERS where NAME =  '" << name[0] << "'";
-
-	//command = temp.str();
-	//sqlite3_prepare_v2(db, command.c_str(), -1, &stmt, 0);
-
-	//sqlite3_step(stmt);
-	//int cnt1 = sqlite3_column_int(stmt, 1); //take NUMBER with name from database
-
-	//temp.str("");
-	//temp << "SELECT * from USERS where NAME =  '" << name[1] << "'";
-
-	//command = temp.str();
-	//sqlite3_prepare_v2(db, command.c_str(), -1, &stmt, 0);
-
-	//sqlite3_step(stmt);
-	//int cnt2 = sqlite3_column_int(stmt, 1); //take NUMBER with name from database
-
-	//temp.str("");
-	//temp << "SELECT * from USERS where NAME =  '" << name[2] << "'";
-
-	//command = temp.str();
-	//sqlite3_prepare_v2(db, command.c_str(), -1, &stmt, 0);
-
-	//sqlite3_step(stmt);
-	//int cnt3 = sqlite3_column_int(stmt, 1); //take NUMBER with name from database
-
-	//temp.str("");
-	//temp << "SELECT * from USERS where NAME =  '" << name[3] << "'";
-
-	//command = temp.str();
-	//sqlite3_prepare_v2(db, command.c_str(), -1, &stmt, 0);
-
-	//sqlite3_step(stmt);
-	//int cnt4 = sqlite3_column_int(stmt, 1); //take NUMBER with name from database
-
-	/* Execute SQL statement */
-	//rc = sqlite3_exec(db, command.c_str(), callback, 0, &zErrMsg);
 
 	if (rc != SQLITE_OK) {
 		fprintf(stderr, "SQL error: %s\n", zErrMsg);
@@ -196,29 +141,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR args, int ncmdsho
 	}
 	//sqlite3_close(db);
 	
-	//InputData.open("C:\\Users\\dungphan16499\\source\\repos\\lab2_TechProg_AppUsers\\outdata.txt");
-	//string line2;
-	////for (int i = 0; i < name.size(); i++)
-	//	if (InputData.is_open())
-	//	{
-	//		for (int i = 0; i < name.size(); i++)
-	//		{
-	//			getline(InputData, line2);
-	//			if (line2 == "" || line2 == "0")
-	//				map_name.insert(pair<string, int>(name[i], MAX_BUTTON));
-	//			else
-	//			{
-	//				int tmp;
-	//				sscanf(line2.c_str(), "%d", &tmp);
-	//				map_name.insert(pair<string, int>(name[i], tmp));			
-	//			}
-	//		}
-	//		InputData.close();
-	//	}
-	
-	//SaveData.open("C:\\Users\\dungphan16499\\source\\repos\\lab2_TechProg_AppUsers\\outdata.txt");
 
-	//MessageBox(NULL, L"Hello", L"msg", MB_OK);
 	if (!RegisterClassW(&wc))
 		return -1;
 	
@@ -267,14 +190,6 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)
 			wstring ws(user_name);
 			string str1(ws.begin(), ws.end()); //convert wchar_t to string 
 			//cnt = MAX_BUTTON;
-			
-
-			//rc = sqlite3_exec(db, command.c_str(), callback, 0, &zErrMsg);
-			//cnt = stoi(tmp);
-
-			//SaveData.open("C:\\Users\\dungphan16499\\source\\repos\\lab2_TechProg_AppUsers\\outdata.txt");
-			//SaveData << cnt << endl;
-			//SaveData.close();
 
 			if (find(name.begin(), name.end(), str1) != name.end())
 			{
@@ -321,7 +236,6 @@ LRESULT CALLBACK WindowProcedure_app(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)
 	{
 	case WM_DESTROY:
 		ShowWindow(hLogin, SW_SHOW);  //Show Login window after turn off application window
-		//sqlite3_close(db); ///?????????
 		//exit(0);
 		//PostQuitMessage(1);
 		break;
@@ -342,17 +256,9 @@ LRESULT CALLBACK WindowProcedure_app(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)
 				command = temp.str();
 				rc = sqlite3_exec(db, command.c_str(), callback, 0, &zErrMsg);
 
-				//temp.str("");
-				//temp << "UPDATE USERS set NUMBER  = " << cnt << "  where NAME = '" << str1 << "'";
-				//command = temp.str();
-				//rc = sqlite3_exec(db, command.c_str(), callback, 0, &zErrMsg);
-				//sqlite3_close(db);
-
 				if (cnt == 0)
-				{
 					DestroyWindow(hApp);
 					
-				}
 		}
 	default:
 		return DefWindowProcW(hWnd, msg, wp, lp);
@@ -385,8 +291,7 @@ void AddControl(HWND hWnd)
 void AddControl_app(HWND hWnd)
 {
 	wchar_t buffer1[MAX] = L"You have ";
-	//wchar_t* ptr;
-	//int myIntValue = 20;
+
 	wchar_t buffer_cnt[256];
 	swprintf_s(buffer_cnt, L"%d", cnt);
 	wcscat(buffer1, buffer_cnt);
@@ -397,12 +302,7 @@ void AddControl_app(HWND hWnd)
 		110, 50, 100, 50,
 		hWnd,
 		NULL, NULL, NULL);
-	//hUsers = CreateWindowW(L"edit", //class edit to get input string
-	//	NULL,
-	//	WS_VISIBLE | WS_CHILD | WS_BORDER | ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL,
-	//	200, 155, 100, 50,
-	//	hWnd,
-	//	NULL, NULL, NULL);
+
 	CreateWindowW(L"button",
 		L"Confirm",
 		WS_VISIBLE | WS_CHILD,
