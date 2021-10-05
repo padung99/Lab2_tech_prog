@@ -6,9 +6,9 @@
 #include <vector>
 #include <fstream>
 #include <atlstr.h>
-#include <map>
 #include <sqlite3.h> 
 #include <sstream>
+#include <wchar.h>
 
 #define OK_BUTTON 1
 #define MAX 100
@@ -34,7 +34,6 @@ void AddControl_app(HWND);
 wchar_t user_name[MAX];
 
 vector<string> name;
-map <string, int> map_name;
 
 int cnt;
 
@@ -156,7 +155,34 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR args, int ncmdsho
 	//sqlite3_prepare_v2(db, command.c_str(), -1, &stmt, 0);
 
 	//sqlite3_step(stmt);
-	//cnt = sqlite3_column_int(stmt, 1);
+	//int cnt1 = sqlite3_column_int(stmt, 1); //take NUMBER with name from database
+
+	//temp.str("");
+	//temp << "SELECT * from USERS where NAME =  '" << name[1] << "'";
+
+	//command = temp.str();
+	//sqlite3_prepare_v2(db, command.c_str(), -1, &stmt, 0);
+
+	//sqlite3_step(stmt);
+	//int cnt2 = sqlite3_column_int(stmt, 1); //take NUMBER with name from database
+
+	//temp.str("");
+	//temp << "SELECT * from USERS where NAME =  '" << name[2] << "'";
+
+	//command = temp.str();
+	//sqlite3_prepare_v2(db, command.c_str(), -1, &stmt, 0);
+
+	//sqlite3_step(stmt);
+	//int cnt3 = sqlite3_column_int(stmt, 1); //take NUMBER with name from database
+
+	//temp.str("");
+	//temp << "SELECT * from USERS where NAME =  '" << name[3] << "'";
+
+	//command = temp.str();
+	//sqlite3_prepare_v2(db, command.c_str(), -1, &stmt, 0);
+
+	//sqlite3_step(stmt);
+	//int cnt4 = sqlite3_column_int(stmt, 1); //take NUMBER with name from database
 
 	/* Execute SQL statement */
 	//rc = sqlite3_exec(db, command.c_str(), callback, 0, &zErrMsg);
@@ -168,7 +194,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR args, int ncmdsho
 	else {
 		fprintf(stdout, "Records created successfully\n");
 	}
-	sqlite3_close(db);
+	//sqlite3_close(db);
 	
 	//InputData.open("C:\\Users\\dungphan16499\\source\\repos\\lab2_TechProg_AppUsers\\outdata.txt");
 	//string line2;
@@ -202,7 +228,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR args, int ncmdsho
 	hLogin = CreateWindowW(L"myWindowClass",
 		L"My Window",
 		WS_OVERLAPPEDWINDOW | WS_VISIBLE,
-		100, 100, 500, 500, NULL, NULL, NULL, NULL);
+		100, 100, 400, 200, NULL, NULL, NULL, NULL);
 
 
 	MSG msg = { 0 };
@@ -227,7 +253,7 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)
 	{
 	case WM_CLOSE:
 		exit(0);
-		sqlite3_close(db);
+		//sqlite3_close(db);
 		//PostQuitMessage(0);
 		break;
 	case WM_CREATE:
@@ -237,7 +263,7 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)
 		{
 		case OK_BUTTON:
 			GetWindowTextW(hUsers, user_name, MAX);
-			rc = sqlite3_open("test.db", &db);
+			//rc = sqlite3_open("test.db", &db);
 			wstring ws(user_name);
 			string str1(ws.begin(), ws.end()); //convert wchar_t to string 
 			//cnt = MAX_BUTTON;
@@ -259,16 +285,28 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)
 				sqlite3_prepare_v2(db, command.c_str(), -1, &stmt, 0);
 
 				sqlite3_step(stmt);
-				cnt = sqlite3_column_int(stmt, 1); //take number with name from database
+				cnt = sqlite3_column_int(stmt, 1); //take NUMBER with name from database
 				if (cnt == 0)
 					cnt = 5;
-				MessageBoxW(NULL, user_name, L"msg", MB_OK);
+				
+				wchar_t buffer1[MAX] = L"Wellcome ";
+				//wchar_t* ptr;
+				wcscat(buffer1, user_name);
+				MessageBoxW(NULL, buffer1, L"Users", MB_OK);
 				hApp = CreateWindowW(L"myWindowClass_app",
 					L"My Window App",
 					WS_OVERLAPPEDWINDOW | WS_VISIBLE,
 					150, 150, 300, 300, NULL, NULL, NULL, NULL);
 				ShowWindow(hLogin, SW_HIDE); //Hide Login window in "using" mode
-				sqlite3_close(db);
+				//sqlite3_close(db);
+			}
+			else
+			{
+				wchar_t head[MAX] = L"User ";
+				wchar_t tail[MAX] = L" does not exist";
+				wcscat(head, user_name);
+				wcscat(head, tail);
+				MessageBoxW(NULL, head, L"Users", MB_ICONHAND);
 			}
 
 		}
@@ -283,6 +321,7 @@ LRESULT CALLBACK WindowProcedure_app(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)
 	{
 	case WM_DESTROY:
 		ShowWindow(hLogin, SW_SHOW);  //Show Login window after turn off application window
+		//sqlite3_close(db); ///?????????
 		//exit(0);
 		//PostQuitMessage(1);
 		break;
@@ -310,11 +349,10 @@ LRESULT CALLBACK WindowProcedure_app(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)
 				//sqlite3_close(db);
 
 				if (cnt == 0)
+				{
 					DestroyWindow(hApp);
-				//if (DestroyWindow(hApp) == 1)
-				//{
-
-				//}
+					
+				}
 		}
 	default:
 		return DefWindowProcW(hWnd, msg, wp, lp);
@@ -326,19 +364,19 @@ void AddControl(HWND hWnd)
 	CreateWindowW(L"static", //class static to print lable
 		L"Enter user: ",
 		WS_VISIBLE | WS_CHILD,
-		200, 100, 100, 50,
+		90, 60, 80, 40,
 		hWnd,
 		NULL, NULL, NULL);
 	hUsers = CreateWindowW(L"edit", //class edit to get input string
 		NULL,
 		WS_VISIBLE | WS_CHILD | WS_BORDER | ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL,
-		200, 155, 100, 50,
+		190, 60, 100, 30,
 		hWnd,
 		NULL, NULL, NULL);
 	CreateWindowW(L"button",
 		L"OK",
 		WS_VISIBLE | WS_CHILD,
-		200, 204, 100, 50,
+		200, 100, 40, 20,
 		hWnd,
 		(HMENU)OK_BUTTON, NULL, NULL);
 }
@@ -346,10 +384,17 @@ void AddControl(HWND hWnd)
 
 void AddControl_app(HWND hWnd)
 {
+	wchar_t buffer1[MAX] = L"You have ";
+	//wchar_t* ptr;
+	//int myIntValue = 20;
+	wchar_t buffer_cnt[256];
+	swprintf_s(buffer_cnt, L"%d", cnt);
+	wcscat(buffer1, buffer_cnt);
+
 	CreateWindowW(L"static", //class static to print lable
-		L"Press this button",
+		buffer1,
 		WS_VISIBLE | WS_CHILD,
-		200, 100, 100, 50,
+		110, 50, 100, 50,
 		hWnd,
 		NULL, NULL, NULL);
 	//hUsers = CreateWindowW(L"edit", //class edit to get input string
@@ -361,7 +406,7 @@ void AddControl_app(HWND hWnd)
 	CreateWindowW(L"button",
 		L"Confirm",
 		WS_VISIBLE | WS_CHILD,
-		180, 185, 100, 50,
+		110, 70, 70, 30,
 		hWnd,
 		(HMENU)CONFIRM_BUTTON, NULL, NULL);
 
