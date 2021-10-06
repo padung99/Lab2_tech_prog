@@ -5,7 +5,6 @@
 #include <stdlib.h>
 #include <vector>
 #include <fstream>
-#include <atlstr.h>
 #include <sqlite3.h> 
 #include <sstream>
 #include <wchar.h>
@@ -55,7 +54,12 @@ static int callback(void* NotUsed, int argc, char** argv, char** azColName) {
 	return 0;
 }
 
+HDC hdc;
+PAINTSTRUCT ps;
+RECT r;
+char szBuffer[200];
 
+//Using database to save data (library sqlite)
 int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR args, int ncmdshow)
 {
 	//cnt = MAX_BUTTON;
@@ -104,7 +108,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR args, int ncmdsho
 	}
 
 
-	/* Create SQL statement */
+	/* Create SQL statement(Create database) */
 	sql = "CREATE TABLE USERS("  \
 		"NAME TEXT PRIMARY KEY     NOT NULL," \
 		"NUMBER            INT    NOT NULL);";
@@ -120,7 +124,7 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR args, int ncmdsho
 		fprintf(stdout, "Table created successfully\n");
 	}
 
-	/* Create SQL statement */
+	/* Insert data(name, number of times) to database */
 	
 	//temp << "INSERT or IGNORE INTO COMPANY (ID,NAME,AGE,ADDRESS,SALARY) VALUES (" << _id << ", '" << _name << "', " << _age << ", '" << _address << "', " << _salary << ")";
 	for (int k = 0; k < name.size(); k++)
@@ -148,8 +152,9 @@ int WINAPI WinMain(HINSTANCE hInst, HINSTANCE hPrevInst, LPSTR args, int ncmdsho
 	if (!RegisterClassW(&wc_app))
 		return -1;
 
+	//Create login Window (Users's name)
 	hLogin = CreateWindowW(L"myWindowClass",
-		L"My Window",
+		L"Start-limited",
 		WS_OVERLAPPEDWINDOW | WS_VISIBLE,
 		100, 100, 400, 200, NULL, NULL, NULL, NULL);
 
@@ -190,7 +195,7 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)
 			wstring ws(user_name);
 			string str1(ws.begin(), ws.end()); //convert wchar_t to string 
 			//cnt = MAX_BUTTON;
-
+			ShowWindow(hLogin, SW_HIDE);
 			if (find(name.begin(), name.end(), str1) != name.end())
 			{
 				temp.str("");
@@ -200,7 +205,7 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)
 				sqlite3_prepare_v2(db, command.c_str(), -1, &stmt, 0);
 
 				sqlite3_step(stmt);
-				cnt = sqlite3_column_int(stmt, 1); //take NUMBER with name from database
+				cnt = sqlite3_column_int(stmt, 1); //get NUMBER's name from database
 				if (cnt == 0)
 					cnt = 5;
 				
@@ -208,20 +213,22 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)
 				//wchar_t* ptr;
 				wcscat(buffer1, user_name);
 				MessageBoxW(NULL, buffer1, L"Users", MB_OK);
-				hApp = CreateWindowW(L"myWindowClass_app",
-					L"My Window App",
+				hApp = CreateWindowW(L"myWindowClass_app", //Application window
+					L"Start-limited",
 					WS_OVERLAPPEDWINDOW | WS_VISIBLE,
 					150, 150, 300, 300, NULL, NULL, NULL, NULL);
-				ShowWindow(hLogin, SW_HIDE); //Hide Login window in "using" mode
+				 //Hide Login window in "Using" mode
 				//sqlite3_close(db);
 			}
 			else
 			{
+				
 				wchar_t head[MAX] = L"User ";
 				wchar_t tail[MAX] = L" does not exist";
 				wcscat(head, user_name);
 				wcscat(head, tail);
 				MessageBoxW(NULL, head, L"Users", MB_ICONHAND);
+				ShowWindow(hLogin, SW_SHOW);
 			}
 
 		}
@@ -247,6 +254,7 @@ LRESULT CALLBACK WindowProcedure_app(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)
 			case CONFIRM_BUTTON:
 				//cnt = MAX_BUTTON;
 				cnt--;
+				InvalidateRect(hWnd, NULL, TRUE);
 				wstring ws(user_name);
 				string str1(ws.begin(), ws.end());
 				//rc = sqlite3_open("test.db", &db);
@@ -260,20 +268,28 @@ LRESULT CALLBACK WindowProcedure_app(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)
 					DestroyWindow(hApp);
 					
 		}
+	case WM_PAINT:
+		hdc = BeginPaint(hWnd, &ps);
+		GetClientRect(hWnd, &r);
+		wsprintf(szBuffer, "You have %d more ", cnt);
+		DrawTextA(hdc, szBuffer, -1, &r, DT_CENTER);
+		EndPaint(hWnd, &ps);
+		break;
+
 	default:
 		return DefWindowProcW(hWnd, msg, wp, lp);
 	}
 }
 
-void AddControl(HWND hWnd)
+void AddControl(HWND hWnd) 
 {
-	CreateWindowW(L"static", //class static to print lable
+	CreateWindowW(L"static", //Uidng class "static" to print lable
 		L"Enter user: ",
 		WS_VISIBLE | WS_CHILD,
 		90, 60, 80, 40,
 		hWnd,
 		NULL, NULL, NULL);
-	hUsers = CreateWindowW(L"edit", //class edit to get input string
+	hUsers = CreateWindowW(L"edit", //Using class "edit" to get input string
 		NULL,
 		WS_VISIBLE | WS_CHILD | WS_BORDER | ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL,
 		190, 60, 100, 30,
@@ -288,18 +304,13 @@ void AddControl(HWND hWnd)
 }
 
 
-void AddControl_app(HWND hWnd)
+void AddControl_app(HWND hWnd) 
 {
-	wchar_t buffer1[MAX] = L"You have ";
 
-	wchar_t buffer_cnt[256];
-	swprintf_s(buffer_cnt, L"%d", cnt);
-	wcscat(buffer1, buffer_cnt);
-
-	CreateWindowW(L"static", //class static to print lable
-		buffer1,
+	CreateWindowW(L"static", //Using class "static" to print lable
+		L"Press this button",
 		WS_VISIBLE | WS_CHILD,
-		110, 50, 100, 50,
+		90, 50, 200, 50,
 		hWnd,
 		NULL, NULL, NULL);
 
@@ -309,5 +320,4 @@ void AddControl_app(HWND hWnd)
 		110, 70, 70, 30,
 		hWnd,
 		(HMENU)CONFIRM_BUTTON, NULL, NULL);
-
 }
