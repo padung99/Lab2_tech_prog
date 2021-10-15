@@ -209,7 +209,7 @@ LRESULT CALLBACK WindowProcedure(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp)
 				if (cnt == 0)
 					cnt = 5;
 				
-				wchar_t buffer1[MAX] = L"Wellcome ";
+				wchar_t buffer1[MAX] = L"Welcome ";
 				//wchar_t* ptr;
 				wcscat(buffer1, user_name);
 				MessageBoxW(NULL, buffer1, L"Users", MB_OK);
