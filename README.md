@@ -14,5 +14,4 @@ https://www.tutorialspoint.com/sqlite/sqlite_c_cpp.htm
 Using Timer:
 https://docs.microsoft.com/en-us/windows/win32/winmsg/using-timers
 https://stackoverflow.com/questions/484466/best-way-to-create-a-timer-on-screen
-C:\Users\dungphan16499\Desktop\1.png
 
