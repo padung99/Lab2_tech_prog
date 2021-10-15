@@ -3,7 +3,7 @@ Create application with Win32 API:
 https://docs.microsoft.com/en-us/windows/win32/learnwin32/learn-to-program-for-windows
 
 Add sqlite library to visual studio 2019:
-
+https://www.youtube.com/watch?v=-C5HSdPU3TI
 
 Insert data to Database
 http://www.cplusplus.com/forum/general/136529/
